@@ -27,7 +27,7 @@ for s in sList:
 		log += ", "
 	
 	if m:
-		line = s + "(" + m.group(0) + ")"
+		line = s + "(" + m.group(0).replace(',', '') + ")"
 		log += line
 
 
