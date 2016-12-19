@@ -2,12 +2,13 @@ import sqlite3
 import urllib.request
 import time
 import re
+import os
 
 
 class BcelktStock:
     def __init__(self):
         self.__stock_url = 'http://www.lsx.com.la/jsp/scrollingIndex.jsp'
-        self.__database = 'db/bcelkt_log.db'
+        self.__database = os.path.dirname(__file__) + "/../db/bcelkt_log.db"
         self.web_read_data = ''
         self.error_message = []
         self.data = {}
@@ -66,3 +67,4 @@ class BcelktStock:
         self.pull_data_from_web()
         self.filter_data()
         self.save_data_to_db()
+
