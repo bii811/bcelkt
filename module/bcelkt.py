@@ -7,7 +7,7 @@ import re
 class BcelktStock:
     def __init__(self):
         self.__stock_url = 'http://www.lsx.com.la/jsp/scrollingIndex.jsp'
-        self.__database = '../db/bcelkt_log.db'
+        self.__database = 'db/bcelkt_log.db'
         self.web_read_data = ''
         self.error_message = []
         self.data = {}
@@ -56,6 +56,8 @@ class BcelktStock:
                 c.execute(query, param)
                 conn.commit()
 
+            print(self.data)
+
         except sqlite3.Error as err:
             self.error_message.append("Sqlite3 error: {}".format(err.args[0]))
 
@@ -64,8 +66,3 @@ class BcelktStock:
         self.pull_data_from_web()
         self.filter_data()
         self.save_data_to_db()
-        print(self.data)
-
-
-bcel = BcelktStock()
-bcel.run()

@@ -2,11 +2,7 @@
 # author: bii811
 # copyright 2016
 
-import urllib.request
-import re
-import sys
-import datetime
-import sqlite3
+import urllib.request, re, sys, datetime
 import csv
 import os
 
@@ -55,4 +51,11 @@ def pull_bcel_log():
         return data
 
 
-conn = sqlite3.connect('bcelkt_daily_log.db')
+if __name__ == '__main__':
+    file_dir = os.path.dirname(os.path.realpath(__file__))
+    file_name = 'bcelkt_log.csv'
+    log_path = os.path.join(file_dir, file_name)
+
+    log = pull_bcel_log()
+    write_csv_log(log, log_path)
+    print(log_path)
