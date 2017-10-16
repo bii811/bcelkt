@@ -1,70 +1,89 @@
 import sqlite3
 import urllib.request
 import time
-import re
 import os
+from bs4 import BeautifulSoup
+import logging
 
 
-class BcelktStock:
+class BCELKtStock:
     def __init__(self):
-        self.__stock_url = 'http://www.lsx.com.la/jsp/scrollingIndex.jsp'
-        self.__database = os.path.dirname(__file__) + "/../db/bcelkt_log.db"
-        self.web_read_data = ''
-        self.error_message = []
-        self.data = {}
+        logging.basicConfig(filename='bcelkt.log', level=logging.INFO)
 
-    def setup(self):
+        self.__stock_url = 'http://www.bcel-kt.com/index.php'
+        self.__database = os.path.dirname(__file__) + "/../db/bcelkt.db"
+        self.stock_name_list = ['BCEL', 'EDL Gen', 'LWPC', 'PTL', 'SVN', 'PCD']
+
+        self.stock = []
+
+    def db_setup(self):
         with sqlite3.connect(self.__database) as conn:
             c = conn.cursor()
             c.execute('''
-            CREATE TABLE IF NOT EXISTS stock_daily_log(
+            CREATE TABLE IF NOT EXISTS stock_daily(
                 id INTEGER PRIMARY KEY,
-                date TEXT,
-                lsx INTEGER,
                 bcel INTEGER,
                 edlgen INTEGER,
                 lwpc INTEGER,
                 ptl INTEGER,
                 svn INTEGER,
+                pcd INTEGER,
                 timestamp INTEGER NOT NULL)
             ''')
 
-    def filter_data(self):
-        temp = self.web_read_data
-        m = re.findall(r"(Date|LSX Composite Index|BCEL|EDL-Gen|LWPC|PTL|SVN):\s(.*)\";", temp)
-        if m:
-            for i, j in m:
-                if i == "Date":
-                    j = j.strip()
-                self.data[i] = j
-
-    def pull_data_from_web(self):
+    def get_exchange_today(self):
         try:
-            with urllib.request.urlopen(self.__stock_url) as f:
-                self.web_read_data = f.read().decode("utf-8")
+            with urllib.request.urlopen(self.__stock_url) as rq:
+                data = rq.read().decode('utf-8')
+
+            soup = BeautifulSoup(data, 'html.parser')
+
+            result = soup.find_all(
+                "table",
+                attrs={'width': 300, 'align': 'right', 'style': 'border-collapse:collapse', 'border': 1}
+            )
+
+            tb_stock = result[1].find_all('tr')
+            tb_stock_header = [h.text.lower() for h in tb_stock[1]]
+            tb_stock_value = [
+                [i.text.replace('\n', '').replace('\t', '') for i in v.find_all('td')] for v in tb_stock[2:]
+            ]
+            tb_stock_value = {i[0].replace(' ', '').lower(): i[1] for i in tb_stock_value}
+            stock = [tb_stock_header, tb_stock_value]
+
+            self.stock = stock
+            logging.info('Request stock: {}'.format(self.stock))
 
         except urllib.request.URLError as err:
-            self.error_message.append("Can't connect to site. Request error: {}".format(err.args[0]))
+            logging.info("Can't connect to site. Request error: {}".format(err.args[0]))
 
     def save_data_to_db(self):
-        query = 'INSERT INTO stock_daily_log VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?)'
-        d = self.data
-        param = (d['Date'], d['LSX Composite Index'], d['BCEL'], d['EDL-Gen'], d['LWPC'], d['PTL'], d['SVN'], time.time())
+        if self.stock:
+            query = 'INSERT INTO stock_daily VALUES(NULL, ?, ?, ?, ?, ?, ?, ?)'
+            d = self.stock[1]
+            param = (d['bcel'], d['edlgen'], d['lwpc'], d['ptl'], d['svn'], d['pcd'], time.time())
 
-        try:
-            with sqlite3.connect(self.__database) as conn:
-                c = conn.cursor()
-                c.execute(query, param)
-                conn.commit()
+            try:
+                with sqlite3.connect(self.__database) as conn:
+                    c = conn.cursor()
+                    c.execute(query, param)
+                    conn.commit()
 
-            print(self.data)
+                logging.info('Data has been saved to db: {}'.format(d))
 
-        except sqlite3.Error as err:
-            self.error_message.append("Sqlite3 error: {}".format(err.args[0]))
+            except sqlite3.Error as err:
+                print(err.args[0])
+                logging.info("Sqlite3 error: {}".format(err.args[0]))
+
+        else:
+            logging.info('No data in stock.')
 
     def run(self):
-        self.setup()
-        self.pull_data_from_web()
-        self.filter_data()
+        self.db_setup()
+        self.get_exchange_today()
         self.save_data_to_db()
 
+
+if __name__ == '__main__':
+    b = BCELKtStock()
+    b.run()
