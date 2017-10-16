@@ -1,0 +1,6 @@
+INFO:root:Request stock: [['issue name', 'current price', 'change'], {'edlgen': '5100', 'bcel': '5400', 'lwpc': '7400', 'ptl': '1950', 'svn': '2950', 'pcd': '1400'}]
+INFO:root:Request stock: [['issue name', 'current price', 'change'], {'edlgen': '5100', 'bcel': '5400', 'lwpc': '7400', 'ptl': '1950', 'svn': '2950', 'pcd': '1400'}]
+INFO:root:Data has been saved to db:INFO:root:Request stock: [['issue name', 'current price', 'change'], {'edlgen': '5100', 'bcel': '5400', 'lwpc': '7400', 'ptl': '1950', 'svn': '2950', 'pcd': '1400'}]
+INFO:root:Data has been saved to db: {'edlgen': '5100', 'bcel': '5400', 'lwpc': '7400', 'ptl': '1950', 'svn': '2950', 'pcd': '1400'}
+INFO:root:Request stock: [['issue name', 'current price', 'change'], {'edlgen': '5100', 'bcel': '5400', 'lwpc': '7400', 'ptl': '1950', 'svn': '2950', 'pcd': '1400'}]
+INFO:root:Data has been saved to db: {'edlgen': '5100', 'bcel': '5400', 'lwpc': '7400', 'ptl': '1950', 'svn': '2950', 'pcd': '1400'}
